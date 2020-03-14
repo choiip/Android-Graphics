@@ -5,6 +5,10 @@ public class MovingAngle {
         return angle;
     }
 
+    public void setAngle(double angle) {
+        this.angle = angle;
+    }
+
     private double angle;
     private double angleMin;
     private double angleMax;

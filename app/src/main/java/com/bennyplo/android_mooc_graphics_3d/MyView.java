@@ -41,6 +41,8 @@ public class MyView extends View {
     private MovingAngle hipAngle;
     private MovingAngle leftLegAngle;
     private MovingAngle rightLegAngle;
+    private MovingAngle leftArmAngle;
+    private MovingAngle rightArmAngle;
 
     public MyView(Context context) {
         super(context, null);
@@ -71,8 +73,11 @@ public class MyView extends View {
         leftLegAngle = new MovingAngle(0, 45, 0.5);
         rightLegAngle = new MovingAngle(0, 45, 0.5);
         rightLegAngle.setPause(true);
+        leftArmAngle = new MovingAngle(0, 45, 0.5);
+        rightArmAngle = new MovingAngle(0, 45, 0.5);
+        leftArmAngle.setPause(true);
 
-                dummy = new Cube();
+        dummy = new Cube();
         hip = new Cube(dummy);
         body = new Cube(hip);
         neck = new Cube(body);
@@ -101,14 +106,24 @@ public class MyView extends View {
             @Override
             public void run() {
                 hipAngle.advance();
+//                hipAngle.setAngle(90);
                 leftLegAngle.advance();
                 rightLegAngle.advance();
+                leftArmAngle.advance();
+                rightArmAngle.advance();
                 if (!leftLegAngle.isPause() && leftLegAngle.getAngle() == 0) {
                     rightLegAngle.setPause(false);
                     leftLegAngle.setPause(true);
                 } else if (!rightLegAngle.isPause() && rightLegAngle.getAngle() == 0) {
                     leftLegAngle.setPause(false);
                     rightLegAngle.setPause(true);
+                }
+                if (!leftArmAngle.isPause() && leftArmAngle.getAngle() == 0) {
+                    rightArmAngle.setPause(false);
+                    leftArmAngle.setPause(true);
+                } else if (!rightArmAngle.isPause() && rightArmAngle.getAngle() == 0) {
+                    leftArmAngle.setPause(false);
+                    rightArmAngle.setPause(true);
                 }
                 //add your code to rotate the object about the axis
                 thisview.invalidate();//update the view
@@ -136,31 +151,37 @@ public class MyView extends View {
 
         leftArm1.setup(body.getSx()/3, 90, 40);
         leftArm1.setTranslate(-(body.getSx()+leftArm1.getSx()), -(body.getSy()-leftArm1.getSy()), 0);
+        leftArm1.setRotateOffset(0, -leftArm1.getTy() + leftArm1.getSy(), -leftArm1.getSz());
         leftArm2.setup(body.getSx()/3, 110, 40);
         leftArm2.setTranslate(0, (leftArm1.getSy()+leftArm2.getSy()), 0);
+        leftArm2.setRotateOffset(0, -leftArm2.getTy() + leftArm2.getSy(), -leftArm2.getSz());
         leftArm3.setup(body.getSx()/3, 30, 80);
         leftArm3.setTranslate(0, (leftArm2.getSy()+leftArm3.getSy()), 30);
 
         rightArm1.setup(body.getSx()/3, 90, 40);
         rightArm1.setTranslate(body.getSx()+rightArm1.getSx(), -(body.getSy()-rightArm1.getSy()), 0);
+        rightArm1.setRotateOffset(0, -rightArm1.getTy() + rightArm1.getSy(), -rightArm1.getSz());
         rightArm2.setup(body.getSx()/3, 110, 40);
         rightArm2.setTranslate(0, (rightArm1.getSy()+rightArm2.getSy()), 0);
+        rightArm2.setRotateOffset(0, -rightArm2.getTy() + rightArm2.getSy(), -rightArm2.getSz());
         rightArm3.setup(body.getSx()/3, 30, 80);
         rightArm3.setTranslate(0, (rightArm2.getSy()+rightArm3.getSy()), 30);
 
         leftLeg1.setup(body.getSx()/3, 100, 40);
         leftLeg1.setTranslate(-body.getSx()/3*2, (hip.getSy()+leftLeg1.getSy()), 0);
+        leftLeg1.setRotateOffset(0, -leftLeg1.getTy() + leftLeg1.getSy(), leftLeg1.getSz());
         leftLeg2.setup(body.getSx()/3, 130, 40);
         leftLeg2.setTranslate(0, (leftLeg1.getSy()+leftLeg2.getSy()), 0);
-        leftLeg2.setRotateOffset(0, -leftLeg2.getSy()/2, leftLeg2.getSz()/2);
+        leftLeg2.setRotateOffset(0, -leftLeg2.getTy() + leftLeg2.getSy(), leftLeg2.getSz());
         leftLeg3.setup(body.getSx()/3, 30, 80);
         leftLeg3.setTranslate(0, (leftLeg2.getSy()+leftLeg3.getSy()), 20);
 
         rightLeg1.setup(body.getSx()/3, 100, 40);
         rightLeg1.setTranslate(body.getSx()/3*2, (hip.getSy()+rightLeg1.getSy()), 0);
+        rightLeg1.setRotateOffset(0, -rightLeg1.getTy() + rightLeg1.getSy(), rightLeg1.getSz());
         rightLeg2.setup(body.getSx()/3, 130, 40);
         rightLeg2.setTranslate(0, (rightLeg1.getSy()+rightLeg2.getSy()), 0);
-        rightLeg2.setRotateOffset(0, -rightLeg2.getSy()/2, rightLeg2.getSz()/2);
+        rightLeg2.setRotateOffset(0, -rightLeg2.getTy() + rightLeg2.getSy(), rightLeg2.getSz());
         rightLeg3.setup(body.getSx()/3, 30, 80);
         rightLeg3.setTranslate(0, (rightLeg2.getSy()+rightLeg3.getSy()), 20);
     }
@@ -169,7 +190,6 @@ public class MyView extends View {
     protected void onDraw(Canvas canvas) {
         //draw objects on the screen
         super.onDraw(canvas);
-
 
         hip.setRotate(hipAngle.getAngle(), 0, 1, 0);
         hip.draw(canvas, purplePaint);
@@ -180,11 +200,15 @@ public class MyView extends View {
 
         head.draw(canvas, bluePaint);
 
+        leftArm1.setRotate(leftArmAngle.getAngle(), 1, 0, 0);
         leftArm1.draw(canvas, bluePaint);
+        leftArm2.setRotate(leftArmAngle.getAngle() * 2, 1, 0, 0);
         leftArm2.draw(canvas, greenPaint);
         leftArm3.draw(canvas, cyanPaint);
 
+        rightArm1.setRotate(rightArmAngle.getAngle(), 1, 0, 0);
         rightArm1.draw(canvas, bluePaint);
+        rightArm1.setRotate(rightArmAngle.getAngle() * 2, 1, 0, 0);
         rightArm2.draw(canvas, greenPaint);
         rightArm3.draw(canvas, cyanPaint);
 
@@ -200,7 +224,4 @@ public class MyView extends View {
         rightLeg2.draw(canvas, greenPaint);
         rightLeg3.draw(canvas, redPaint);
     }
-
-
-
 }
