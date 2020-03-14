@@ -33,10 +33,10 @@ public class MovingAngle {
     public void advance() {
         if (pause) return;
         angle += delta;
-        if (angle > angleMax) {
+        if (angle >= angleMax) {
             angle = angleMax;
             delta *= -1;
-        } else if (angle < angleMin) {
+        } else if (angle <= angleMin) {
             angle = angleMin;
             delta *= -1;
         }

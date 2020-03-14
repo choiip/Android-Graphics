@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.View;
 
 import java.util.Timer;
@@ -44,6 +45,9 @@ public class MyView extends View {
     private MovingAngle leftArmAngle;
     private MovingAngle rightArmAngle;
 
+    private MovingParam[] sequence;
+    private int cs; // current sequence
+
     public MyView(Context context) {
         super(context, null);
         final MyView thisview=this;
@@ -69,14 +73,6 @@ public class MyView extends View {
         purplePaint.setColor(Color.MAGENTA);
         purplePaint.setStrokeWidth(2);
 
-        hipAngle = new MovingAngle(-45, 45, 0.1);
-        leftLegAngle = new MovingAngle(0, 45, 0.5);
-        rightLegAngle = new MovingAngle(0, 45, 0.5);
-        rightLegAngle.setPause(true);
-        leftArmAngle = new MovingAngle(0, 45, 0.5);
-        rightArmAngle = new MovingAngle(0, 45, 0.5);
-        leftArmAngle.setPause(true);
-
         dummy = new Cube();
         hip = new Cube(dummy);
         body = new Cube(hip);
@@ -98,48 +94,7 @@ public class MyView extends View {
         rightLeg1 = new Cube(hip);
         rightLeg2 = new Cube(rightLeg1);
         rightLeg3 = new Cube(rightLeg2);
-
-        thisview.invalidate();//update the view
-
-        Timer timer=new Timer();
-        TimerTask task= new TimerTask() {
-            @Override
-            public void run() {
-                hipAngle.advance();
-//                hipAngle.setAngle(90);
-                leftLegAngle.advance();
-                rightLegAngle.advance();
-                leftArmAngle.advance();
-                rightArmAngle.advance();
-                if (!leftLegAngle.isPause() && leftLegAngle.getAngle() == 0) {
-                    rightLegAngle.setPause(false);
-                    leftLegAngle.setPause(true);
-                } else if (!rightLegAngle.isPause() && rightLegAngle.getAngle() == 0) {
-                    leftLegAngle.setPause(false);
-                    rightLegAngle.setPause(true);
-                }
-                if (!leftArmAngle.isPause() && leftArmAngle.getAngle() == 0) {
-                    rightArmAngle.setPause(false);
-                    leftArmAngle.setPause(true);
-                } else if (!rightArmAngle.isPause() && rightArmAngle.getAngle() == 0) {
-                    leftArmAngle.setPause(false);
-                    rightArmAngle.setPause(true);
-                }
-                //add your code to rotate the object about the axis
-                thisview.invalidate();//update the view
-            }
-        };
-        timer.scheduleAtFixedRate(task,100,2);
-    }
-
-    @Override
-    public void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        screenWidth = w;
-        screenHeight = h;
-
-        dummy.setup(screenWidth/4, screenHeight/4, 1);
-        dummy.setTranslate(screenWidth/2, screenHeight/2, 0);
+//////////////////////////////////////////////////////////////////
         hip.setup(180, 50, 60);
         hip.setTranslate(0, 0, 0);
         body.setup(hip.getSx(), 220, hip.getSz());
@@ -151,19 +106,19 @@ public class MyView extends View {
 
         leftArm1.setup(body.getSx()/3, 90, 40);
         leftArm1.setTranslate(-(body.getSx()+leftArm1.getSx()), -(body.getSy()-leftArm1.getSy()), 0);
-        leftArm1.setRotateOffset(0, -leftArm1.getTy() + leftArm1.getSy(), -leftArm1.getSz());
+//        leftArm1.setRotateOffset(0, -leftArm1.getTy() + leftArm1.getSy(), -leftArm1.getSz());
         leftArm2.setup(body.getSx()/3, 110, 40);
         leftArm2.setTranslate(0, (leftArm1.getSy()+leftArm2.getSy()), 0);
-        leftArm2.setRotateOffset(0, -leftArm2.getTy() + leftArm2.getSy(), -leftArm2.getSz());
+//        leftArm2.setRotateOffset(0, -leftArm2.getTy() + leftArm2.getSy(), -leftArm2.getSz());
         leftArm3.setup(body.getSx()/3, 30, 80);
         leftArm3.setTranslate(0, (leftArm2.getSy()+leftArm3.getSy()), 30);
 
         rightArm1.setup(body.getSx()/3, 90, 40);
         rightArm1.setTranslate(body.getSx()+rightArm1.getSx(), -(body.getSy()-rightArm1.getSy()), 0);
-        rightArm1.setRotateOffset(0, -rightArm1.getTy() + rightArm1.getSy(), -rightArm1.getSz());
+//        rightArm1.setRotateOffset(0, -rightArm1.getTy() + rightArm1.getSy(), -rightArm1.getSz());
         rightArm2.setup(body.getSx()/3, 110, 40);
         rightArm2.setTranslate(0, (rightArm1.getSy()+rightArm2.getSy()), 0);
-        rightArm2.setRotateOffset(0, -rightArm2.getTy() + rightArm2.getSy(), -rightArm2.getSz());
+//        rightArm2.setRotateOffset(0, -rightArm2.getTy() + rightArm2.getSy(), -rightArm2.getSz());
         rightArm3.setup(body.getSx()/3, 30, 80);
         rightArm3.setTranslate(0, (rightArm2.getSy()+rightArm3.getSy()), 30);
 
@@ -184,6 +139,139 @@ public class MyView extends View {
         rightLeg2.setRotateOffset(0, -rightLeg2.getTy() + rightLeg2.getSy(), rightLeg2.getSz());
         rightLeg3.setup(body.getSx()/3, 30, 80);
         rightLeg3.setTranslate(0, (rightLeg2.getSy()+rightLeg3.getSy()), 20);
+///////////////////////////////////////////////////////////////////
+
+        hipAngle = new MovingAngle(-45, 45, 0.2);
+        leftLegAngle = new MovingAngle(0, 45, 1);
+        rightLegAngle = new MovingAngle(0, 45, 1);
+        rightLegAngle.setPause(true);
+        leftArmAngle = new MovingAngle(0, 45, 1);
+        rightArmAngle = new MovingAngle(0, 45, 1);
+        leftArmAngle.setPause(true);
+
+        sequence = new MovingParam[16];  // LLRRLLRRLLRRLLRR
+        for (int i=0; i< sequence.length; i++) {
+            sequence[i] = new MovingParam();
+        }
+        // sequence 1
+        sequence[0].ax = 1; sequence[0].ay = 0; sequence[0].az = 0;
+        sequence[0].rx = 0; sequence[0].ry = -leftArm1.getTy() + leftArm1.getSy(); sequence[0].rz = -leftArm1.getSz();
+        sequence[1].ax = 1; sequence[1].ay = 0; sequence[1].az = 0;
+        sequence[1].rx = 0; sequence[1].ry = -leftArm2.getTy() + leftArm2.getSy(); sequence[1].rz = -leftArm2.getSz();
+
+        sequence[2].ax = 1; sequence[2].ay = 0; sequence[2].az = 0;
+        sequence[2].rx = 0; sequence[2].ry = -rightArm1.getTy() + rightArm1.getSy(); sequence[2].rz = -rightArm1.getSz();
+        sequence[3].ax = 1; sequence[3].ay = 0; sequence[3].az = 0;
+        sequence[3].rx = 0; sequence[3].ry = -rightArm2.getTy() + rightArm2.getSy(); sequence[3].rz = -rightArm2.getSz();
+
+        // sequence 2
+        sequence[4].ax = 0; sequence[4].ay = 0; sequence[4].az = 1;
+        sequence[4].rx = -leftArm1.getTx() - leftArm1.getSx(); sequence[4].ry = -leftArm1.getTy() + leftArm1.getSy(); sequence[4].rz = 0;
+        sequence[5].ax = 0; sequence[5].ay = 0; sequence[5].az = 1;
+        sequence[5].rx = -leftArm2.getTx() + leftArm2.getSx(); sequence[5].ry = -leftArm2.getTy() + leftArm2.getSy(); sequence[5].rz = 0;
+
+        sequence[6].ax = 0; sequence[6].ay = 0; sequence[6].az = -1;
+        sequence[6].rx = -rightArm1.getTx() + rightArm1.getSx(); sequence[6].ry = -rightArm1.getTy() + rightArm1.getSy(); sequence[6].rz = 0;
+        sequence[7].ax = 0; sequence[7].ay = 0; sequence[7].az = -1;
+        sequence[7].rx = -rightArm2.getTx() - rightArm2.getSx(); sequence[7].ry = -rightArm2.getTy() + rightArm2.getSy(); sequence[7].rz = 0;
+
+        // sequence 3
+        sequence[8].ax = 1; sequence[8].ay = 1; sequence[8].az = 0;
+        sequence[8].rx = 0; sequence[8].ry = -leftArm1.getTy() + leftArm1.getSy(); sequence[8].rz = 0;
+        sequence[9].ax = 1; sequence[9].ay = 1; sequence[9].az = 0;
+        sequence[9].rx = 0; sequence[9].ry = -leftArm2.getTy() + leftArm2.getSy(); sequence[9].rz = 0;
+
+        sequence[10].ax = 1; sequence[10].ay = 1; sequence[10].az = 0;
+        sequence[10].rx = 0; sequence[10].ry = -rightArm1.getTy() + rightArm1.getSy(); sequence[10].rz = 0;
+        sequence[11].ax = 1; sequence[11].ay = 1; sequence[11].az = 0;
+        sequence[11].rx = 0; sequence[11].ry = -rightArm2.getTy() + rightArm2.getSy(); sequence[11].rz = 0;
+
+        // sequence 4
+        sequence[12].ax = 1; sequence[12].ay = -1; sequence[12].az = 0;
+        sequence[12].rx = 0; sequence[12].ry = -leftArm1.getTy() + leftArm1.getSy(); sequence[12].rz = 0;
+        sequence[13].ax = 1; sequence[13].ay = -1; sequence[13].az = 0;
+        sequence[13].rx = 0; sequence[13].ry = -leftArm2.getTy() + leftArm2.getSy(); sequence[13].rz = 0;
+
+        sequence[14].ax = 1; sequence[14].ay = -1; sequence[14].az = 0;
+        sequence[14].rx = 0; sequence[14].ry = -rightArm1.getTy() + rightArm1.getSy(); sequence[14].rz = 0;
+        sequence[15].ax = 1; sequence[15].ay = -1; sequence[15].az = 0;
+        sequence[15].rx = 0; sequence[15].ry = -rightArm2.getTy() + rightArm2.getSy(); sequence[15].rz = 0;
+
+        cs = 0; // start with first sequence
+
+        thisview.invalidate();//update the view
+
+        Timer timer=new Timer();
+        TimerTask task= new TimerTask() {
+            @Override
+            public void run() {
+                hipAngle.advance();
+//                hipAngle.setAngle(0);
+                leftLegAngle.advance();
+                rightLegAngle.advance();
+                leftArmAngle.advance();
+                rightArmAngle.advance();
+                if (cs <= 1) {
+                    if (!leftLegAngle.isPause() && leftLegAngle.getAngle() == 0) {
+                        rightLegAngle.setPause(false);
+                        leftLegAngle.setPause(true);
+                    } else if (!rightLegAngle.isPause() && rightLegAngle.getAngle() == 0) {
+                        leftLegAngle.setPause(false);
+                        rightLegAngle.setPause(true);
+                    }
+                    if (!rightArmAngle.isPause() && rightArmAngle.getAngle() == 0) {
+                        leftArmAngle.setPause(false);
+                        rightArmAngle.setPause(true);
+                    } else if (!leftArmAngle.isPause() && leftArmAngle.getAngle() == 0) {
+                        rightArmAngle.setPause(false);
+                        leftArmAngle.setPause(true);
+                        cs = (cs + 1) % 4;
+                        if (cs >= 2) {
+                            leftArmAngle.setPause(false);
+                            leftLegAngle.setPause(true);
+                            rightLegAngle.setPause(true);
+                        }
+                    }
+                } else {
+                    if (leftArmAngle.getAngle() == 0) {
+                        cs = (cs + 1) % 4;
+                        if (cs == 0) {
+                            leftArmAngle.setPause(true);
+                            rightLegAngle.setPause(false);
+                        }
+                    }
+                }
+
+                hip.setRotate(hipAngle.getAngle(), 0, 1, 0);
+
+                leftArm1.setRotate(leftArmAngle.getAngle(), sequence[4*cs].ax, sequence[4*cs].ay, sequence[4*cs].az);
+                leftArm1.setRotateOffset(sequence[4*cs].rx, sequence[4*cs].ry, sequence[4*cs].rz);
+                leftArm2.setRotate(leftArmAngle.getAngle() * 2, sequence[4*cs+1].ax, sequence[4*cs+1].ay, sequence[4*cs+1].az);
+                leftArm2.setRotateOffset(sequence[4*cs+1].rx, sequence[4*cs+1].ry, sequence[4*cs+1].rz);
+                rightArm1.setRotate(rightArmAngle.getAngle(), sequence[4*cs+2].ax, sequence[4*cs+2].ay, sequence[4*cs+2].az);
+                rightArm1.setRotateOffset(sequence[4*cs+2].rx, sequence[4*cs+2].ry, sequence[4*cs+2].rz);
+                rightArm2.setRotate(rightArmAngle.getAngle() * 2, sequence[4*cs+3].ax, sequence[4*cs+3].ay, sequence[4*cs+3].az);
+                rightArm2.setRotateOffset(sequence[4*cs+3].rx, sequence[4*cs+3].ry, sequence[4*cs+3].rz);
+
+                leftLeg1.setRotate(leftLegAngle.getAngle(), 1, 0, 0);
+                leftLeg2.setRotate(leftLegAngle.getAngle(), -1, 0, 0);
+                rightLeg1.setRotate(rightLegAngle.getAngle(), 1, 0, 0);
+                rightLeg2.setRotate(rightLegAngle.getAngle(), -1, 0, 0);
+
+                thisview.invalidate();//update the view
+            }
+        };
+        timer.scheduleAtFixedRate(task,100,4);
+    }
+
+    @Override
+    public void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        screenWidth = w;
+        screenHeight = h;
+
+        dummy.setup(screenWidth/4, screenHeight/4, 1);
+        dummy.setTranslate(screenWidth/2, screenHeight/2, 0);
     }
 
     @Override
@@ -191,7 +279,6 @@ public class MyView extends View {
         //draw objects on the screen
         super.onDraw(canvas);
 
-        hip.setRotate(hipAngle.getAngle(), 0, 1, 0);
         hip.draw(canvas, purplePaint);
 
         body.draw(canvas, redPaint);//draw a cube onto the screen
@@ -200,27 +287,19 @@ public class MyView extends View {
 
         head.draw(canvas, bluePaint);
 
-        leftArm1.setRotate(leftArmAngle.getAngle(), 1, 0, 0);
         leftArm1.draw(canvas, bluePaint);
-        leftArm2.setRotate(leftArmAngle.getAngle() * 2, 1, 0, 0);
         leftArm2.draw(canvas, greenPaint);
         leftArm3.draw(canvas, cyanPaint);
 
-        rightArm1.setRotate(rightArmAngle.getAngle(), 1, 0, 0);
         rightArm1.draw(canvas, bluePaint);
-        rightArm1.setRotate(rightArmAngle.getAngle() * 2, 1, 0, 0);
         rightArm2.draw(canvas, greenPaint);
         rightArm3.draw(canvas, cyanPaint);
 
-        leftLeg1.setRotate(leftLegAngle.getAngle(), 1, 0, 0);
         leftLeg1.draw(canvas, bluePaint);
-        leftLeg2.setRotate(leftLegAngle.getAngle(), -1, 0, 0);
         leftLeg2.draw(canvas, greenPaint);
         leftLeg3.draw(canvas, redPaint);
 
-        rightLeg1.setRotate(rightLegAngle.getAngle(), 1, 0, 0);
         rightLeg1.draw(canvas, bluePaint);
-        rightLeg2.setRotate(rightLegAngle.getAngle(), -1, 0, 0);
         rightLeg2.draw(canvas, greenPaint);
         rightLeg3.draw(canvas, redPaint);
     }

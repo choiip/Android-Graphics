@@ -26,6 +26,7 @@ public class Cube {
 
     private double angle, ax, ay, az;
     private double rx, ry, rz;
+    private double sx, sy, sz;
 
     public double getSx() {
         return sx;
@@ -38,8 +39,6 @@ public class Cube {
     public double getSz() {
         return sz;
     }
-
-    private double sx, sy, sz;
 
     public Cube() {
         this(null);
