@@ -7,7 +7,6 @@ public class Cube {
     private Cube parent = null;
     private Coordinate[]vertices;//the vertices of a 3D cube
     private Coordinate[]draw_vertices;//the vertices for drawing a 3D cube
-    private Paint paint;
 
     private double tx;
     private double ty;
@@ -26,6 +25,7 @@ public class Cube {
     }
 
     private double angle, ax, ay, az;
+    private double rx, ry, rz;
 
     public double getSx() {
         return sx;
@@ -41,12 +41,11 @@ public class Cube {
 
     private double sx, sy, sz;
 
-    public Cube(Paint paint) {
-        this(paint, null);
+    public Cube() {
+        this(null);
     }
 
-    public Cube(Paint paint, Cube parent) {
-        this.paint = paint;
+    public Cube(Cube parent) {
         this.parent = parent;
         vertices = new Coordinate[8];
         vertices[0] = new Coordinate(-1, -1, -1, 1);
@@ -60,6 +59,7 @@ public class Cube {
         setup(1,1,1);
         setTranslate(0,0,0);
         setRotate(0, 0,1,0);
+        setRotateOffset(0, 0,0);
     }
 
     private void DrawLinePairs(Canvas canvas, Coordinate[] vertices, int start, int end, Paint paint)
@@ -91,11 +91,17 @@ public class Cube {
         this.ay = ay;
         this.az = az;
     }
-
+    public void setRotateOffset(double rx, double ry, double rz) {
+        this.rx = rx;
+        this.ry = ry;
+        this.rz = rz;
+    }
     public Coordinate[] transform(Coordinate[] vertices) {
         Coordinate[] draw_cube_vertices=vertices;
         draw_cube_vertices=Transformation.translate(draw_cube_vertices,tx,ty,tz);
+        draw_cube_vertices=Transformation.translate(draw_cube_vertices,rx,ry,rz);
         draw_cube_vertices=Transformation.rotate(draw_cube_vertices, angle, ax, ay, az);
+        draw_cube_vertices=Transformation.translate(draw_cube_vertices,-rx,-ry,-rz);
 
         if (parent != null) {
             draw_cube_vertices = parent.transform(draw_cube_vertices);
@@ -103,7 +109,7 @@ public class Cube {
         return draw_cube_vertices;
     }
 
-    public void draw(Canvas canvas)
+    public void draw(Canvas canvas, Paint paint)
     {
         draw_vertices = transform(vertices);
         //draw a cube on the screen
