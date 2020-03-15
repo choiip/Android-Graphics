@@ -4,11 +4,13 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Log;
 import android.view.View;
 
+import java.util.Comparator;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static java.util.Arrays.sort;
 
 public class MyView extends View {
     private Paint redPaint; //paint object for drawing the lines
@@ -16,7 +18,7 @@ public class MyView extends View {
     private Paint bluePaint; //paint object for drawing the lines
     private Paint cyanPaint; //paint object for drawing the lines
     private Paint purplePaint; //paint object for drawing the lines
-    private final Paint.Style paintStyle = Paint.Style.FILL;
+    private final Paint.Style paintStyle = Paint.Style.FILL_AND_STROKE;
 
     double screenWidth = 0;
     double screenHeight = 0;
@@ -106,19 +108,15 @@ public class MyView extends View {
 
         leftArm1.setup(body.getSx()/3, 90, 40);
         leftArm1.setTranslate(-(body.getSx()+leftArm1.getSx()), -(body.getSy()-leftArm1.getSy()), 0);
-//        leftArm1.setRotateOffset(0, -leftArm1.getTy() + leftArm1.getSy(), -leftArm1.getSz());
         leftArm2.setup(body.getSx()/3, 110, 40);
         leftArm2.setTranslate(0, (leftArm1.getSy()+leftArm2.getSy()), 0);
-//        leftArm2.setRotateOffset(0, -leftArm2.getTy() + leftArm2.getSy(), -leftArm2.getSz());
         leftArm3.setup(body.getSx()/3, 30, 80);
         leftArm3.setTranslate(0, (leftArm2.getSy()+leftArm3.getSy()), 30);
 
         rightArm1.setup(body.getSx()/3, 90, 40);
         rightArm1.setTranslate(body.getSx()+rightArm1.getSx(), -(body.getSy()-rightArm1.getSy()), 0);
-//        rightArm1.setRotateOffset(0, -rightArm1.getTy() + rightArm1.getSy(), -rightArm1.getSz());
         rightArm2.setup(body.getSx()/3, 110, 40);
         rightArm2.setTranslate(0, (rightArm1.getSy()+rightArm2.getSy()), 0);
-//        rightArm2.setRotateOffset(0, -rightArm2.getTy() + rightArm2.getSy(), -rightArm2.getSz());
         rightArm3.setup(body.getSx()/3, 30, 80);
         rightArm3.setTranslate(0, (rightArm2.getSy()+rightArm3.getSy()), 30);
 
@@ -272,6 +270,9 @@ public class MyView extends View {
 
         dummy.setup(screenWidth/4, screenHeight/4, 1);
         dummy.setTranslate(screenWidth/2, screenHeight/2, 0);
+        dummy.setRotate(180, 0,1,0);
+        dummy.setRotateOffset(-dummy.getTx(), -dummy.getTy(), 0);
+
     }
 
     @Override
@@ -279,28 +280,41 @@ public class MyView extends View {
         //draw objects on the screen
         super.onDraw(canvas);
 
-        hip.draw(canvas, purplePaint);
+        hip.preDraw(purplePaint);
+        body.preDraw(redPaint);
+        neck.preDraw(purplePaint);
+        head.preDraw(bluePaint);
+        leftArm1.preDraw(bluePaint);
+        leftArm2.preDraw(greenPaint);
+        leftArm3.preDraw(cyanPaint);
+        rightArm1.preDraw(bluePaint);
+        rightArm2.preDraw(greenPaint);
+        rightArm3.preDraw(cyanPaint);
+        leftLeg1.preDraw(bluePaint);
+        leftLeg2.preDraw(greenPaint);
+        leftLeg3.preDraw(redPaint);
+        rightLeg1.preDraw(bluePaint);
+        rightLeg2.preDraw(greenPaint);
+        rightLeg3.preDraw(redPaint);
 
-        body.draw(canvas, redPaint);//draw a cube onto the screen
-
-        neck.draw(canvas, purplePaint);
-
-        head.draw(canvas, bluePaint);
-
-        leftArm1.draw(canvas, bluePaint);
-        leftArm2.draw(canvas, greenPaint);
-        leftArm3.draw(canvas, cyanPaint);
-
-        rightArm1.draw(canvas, bluePaint);
-        rightArm2.draw(canvas, greenPaint);
-        rightArm3.draw(canvas, cyanPaint);
-
-        leftLeg1.draw(canvas, bluePaint);
-        leftLeg2.draw(canvas, greenPaint);
-        leftLeg3.draw(canvas, redPaint);
-
-        rightLeg1.draw(canvas, bluePaint);
-        rightLeg2.draw(canvas, greenPaint);
-        rightLeg3.draw(canvas, redPaint);
+        Cube[] renderCubes = {
+                hip,
+                body,
+                neck,
+                head,
+                leftArm1, leftArm2, leftArm3,
+                rightArm1, rightArm2, rightArm3,
+                leftLeg1, leftLeg2, leftLeg3,
+                rightLeg1, rightLeg2, rightLeg3,
+        };
+        sort(renderCubes, new Comparator<Cube>() {
+            @Override
+            public int compare(Cube o1, Cube o2) {
+                return new Double(o2.getMaxZ()).compareTo(o1.getMaxZ());
+            }
+        });
+        for (Cube c: renderCubes) {
+            c.draw(canvas);
+        }
     }
 }

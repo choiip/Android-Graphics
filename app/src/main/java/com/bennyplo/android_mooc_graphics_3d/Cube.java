@@ -2,11 +2,13 @@ package com.bennyplo.android_mooc_graphics_3d;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 
 public class Cube {
     private Cube parent = null;
     private Coordinate[]vertices;//the vertices of a 3D cube
     private Coordinate[]draw_vertices;//the vertices for drawing a 3D cube
+    private Paint paint;
 
     private double tx;
     private double ty;
@@ -40,6 +42,11 @@ public class Cube {
         return sz;
     }
 
+    private double maxZ = 1;
+
+    public double getMaxZ() {
+        return maxZ;
+    }
     public Cube() {
         this(null);
     }
@@ -61,14 +68,14 @@ public class Cube {
         setRotateOffset(0, 0,0);
     }
 
-    private void DrawLinePairs(Canvas canvas, Coordinate[] vertices, int start, int end, Paint paint)
-    {//draw a line connecting 2 points
-        //canvas - canvas of the view
-        //points - array of points
-        //start - index of the starting point
-        //end - index of the ending point
-        //paint - the paint of the line
-        canvas.drawLine((int)vertices[start].x,(int)vertices[start].y,(int)vertices[end].x,(int)vertices[end].y,paint);
+    private void DrawFace(Canvas canvas, Coordinate[] vertices, int v0, int v1, int v2, int v3, Paint paint) {
+        Path path = new Path();
+        path.moveTo((float)vertices[v0].x, (float)vertices[v0].y);
+        path.lineTo((float)vertices[v1].x, (float)vertices[v1].y);
+        path.lineTo((float)vertices[v2].x, (float)vertices[v2].y);
+        path.lineTo((float)vertices[v3].x, (float)vertices[v3].y);
+        path.close();
+        canvas.drawPath(path, paint);
     }
 
     public void setup(double sx, double sy, double sz) {
@@ -108,21 +115,26 @@ public class Cube {
         return draw_cube_vertices;
     }
 
-    public void draw(Canvas canvas, Paint paint)
-    {
+    public double preDraw(Paint paint) {
+        this.paint = paint;
         draw_vertices = transform(vertices);
+        maxZ = draw_vertices[0].z;
+        for (Coordinate c : draw_vertices) {
+            if (maxZ < c.z) {
+                maxZ = c.z;
+            }
+        }
+        return maxZ;
+    }
+
+    public void draw(Canvas canvas)
+    {
         //draw a cube on the screen
-        DrawLinePairs(canvas, draw_vertices, 0, 1, paint);
-        DrawLinePairs(canvas, draw_vertices, 1, 3, paint);
-        DrawLinePairs(canvas, draw_vertices, 3, 2, paint);
-        DrawLinePairs(canvas, draw_vertices, 2, 0, paint);
-        DrawLinePairs(canvas, draw_vertices, 4, 5, paint);
-        DrawLinePairs(canvas, draw_vertices, 5, 7, paint);
-        DrawLinePairs(canvas, draw_vertices, 7, 6, paint);
-        DrawLinePairs(canvas, draw_vertices, 6, 4, paint);
-        DrawLinePairs(canvas, draw_vertices, 0, 4, paint);
-        DrawLinePairs(canvas, draw_vertices, 1, 5, paint);
-        DrawLinePairs(canvas, draw_vertices, 2, 6, paint);
-        DrawLinePairs(canvas, draw_vertices, 3, 7, paint);
+        DrawFace(canvas, draw_vertices, 0, 1, 3, 2, paint);
+        DrawFace(canvas, draw_vertices, 0, 1, 5, 4, paint);
+        DrawFace(canvas, draw_vertices, 0, 2, 6, 4, paint);
+        DrawFace(canvas, draw_vertices, 1, 3, 7, 5, paint);
+        DrawFace(canvas, draw_vertices, 2, 3, 7, 6, paint);
+        DrawFace(canvas, draw_vertices, 4, 5, 7, 6, paint);
     }
 }
